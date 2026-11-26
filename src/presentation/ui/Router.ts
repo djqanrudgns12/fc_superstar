@@ -1,4 +1,5 @@
 import type { GameScreen } from '../../shared/types/index';
+import { APP_META } from '../../shared/config/appMeta';
 import { gameStore } from '../../infrastructure/stores/gameStore';
 
 export type ScreenRenderer = (container: HTMLElement) => void;
@@ -45,5 +46,15 @@ export class Router {
     } else {
       this.container.innerHTML = `<div class="card"><p>Screen '${target}' not found.</p></div>`;
     }
+
+    const globalFooter = document.createElement('footer');
+    globalFooter.className = 'app-global-footer';
+    globalFooter.setAttribute('aria-label', `${APP_META.name} ${APP_META.displayVersion}`);
+    globalFooter.innerHTML = `
+      <span class="app-global-footer-name">${APP_META.name}</span>
+      <span class="app-global-footer-sep">·</span>
+      <span class="app-global-footer-version num">${APP_META.displayVersion}</span>
+    `;
+    this.container.appendChild(globalFooter);
   }
 }

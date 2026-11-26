@@ -1,5 +1,5 @@
 /* ================================================================
-   SHARED TYPE DEFINITIONS — Soccer Manager Game
+   SHARED TYPE DEFINITIONS — FC Superstar (v1.0.0)
    All domain types, interfaces, value objects in one place
    ================================================================ */
 

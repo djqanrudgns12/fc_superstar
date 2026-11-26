@@ -1,8 +1,8 @@
-# FC SUPERSTAR — GitHub Pages 호스팅 & 로컬 DB/캐싱 운영 원칙
+# FC Superstar (v1.0.0) — GitHub Pages 호스팅 & 로컬 DB/캐싱 운영 원칙
 
 ## 1. 전체 아키텍처 개요
 
-FC SUPERSTAR는 **백엔드 서버 없는(Zero-Backend) 정적 웹 애플리케이션**으로, GitHub Pages를 통해 정적 에셋을 호스팅하고 모든 게임 데이터는 사용자의 브라우저 로컬 데이터베이스에서 관리합니다.
+**FC Superstar**는 **백엔드 서버 없는(Zero-Backend) 정적 웹 애플리케이션**으로, GitHub Pages를 통해 정적 에셋을 호스팅하고 모든 게임 데이터는 사용자의 브라우저 로컬 데이터베이스에서 관리합니다.
 
 ```mermaid
 flowchart TB

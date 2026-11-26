@@ -16,6 +16,7 @@
      7. GitHub Pages Origin Namespace Isolation
    ================================================================ */
 
+import { APP_META } from '../../shared/config/appMeta';
 import {
   APP_NAMESPACE,
   DB_SCHEMA_VERSION,
@@ -404,6 +405,8 @@ export class LocalDbManager {
     );
     const backup: BackupExportFile = {
       format: 'fc-superstar-local-db-backup',
+      appName: APP_META.name,
+      appVersion: APP_META.version,
       exportedAt: new Date().toISOString(),
       envelope,
     };
@@ -487,6 +490,8 @@ export class LocalDbManager {
     }
 
     return {
+      appName: APP_META.name,
+      appVersion: APP_META.version,
       schemaVersion: DB_SCHEMA_VERSION,
       indexedDbSupported: this.idb.isSupported(),
       indexedDbReady: this.idb.isReady(),

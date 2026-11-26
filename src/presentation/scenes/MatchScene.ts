@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { APP_META } from '../../shared/config/appMeta';
 import {
   PITCH_WIDTH,
   PITCH_HEIGHT,
@@ -365,7 +366,7 @@ export class MatchScene extends Phaser.Scene {
 
     // 6-3. In-World Grand Stadium Jumbotron (Positioned on the North Grandstand)
     const jumbotronIso = worldToIso(PITCH_HALF_W, -220);
-    this.jumbotronTitleText = this.add.text(jumbotronIso.x, jumbotronIso.y - 25, 'FC SUPERSTAR ARENA', {
+    this.jumbotronTitleText = this.add.text(jumbotronIso.x, jumbotronIso.y - 25, APP_META.arenaName.toUpperCase(), {
       fontFamily: 'Pretendard, sans-serif',
       fontSize: '12px',
       color: '#B89B68',

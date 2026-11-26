@@ -67,6 +67,8 @@ export interface CacheStats {
 }
 
 export interface StorageHealthStatus {
+  appName: string;
+  appVersion: string;
   schemaVersion: number;
   indexedDbSupported: boolean;
   indexedDbReady: boolean;
@@ -83,6 +85,8 @@ export interface StorageHealthStatus {
 
 export interface BackupExportFile {
   format: 'fc-superstar-local-db-backup';
+  appName?: string;
+  appVersion?: string;
   exportedAt: string;
   envelope: StorageEnvelope;
 }

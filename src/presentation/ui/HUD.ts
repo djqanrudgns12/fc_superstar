@@ -1,3 +1,4 @@
+import { APP_META } from '../../shared/config/appMeta';
 import { gameStore } from '../../infrastructure/stores/gameStore';
 import type { MatchRecord, MatchResult } from '../../shared/types/index';
 import { createModal, UI_SVGS } from './components';
@@ -34,6 +35,10 @@ export class InGameHUD {
 
     this.container.innerHTML = `
       <div class="hud-top-bar">
+        <div class="hud-brand-badge" aria-label="${APP_META.name} ${APP_META.displayVersion}">
+          <span class="hud-brand-name">${APP_META.name}</span>
+          <span class="hud-brand-ver num">${APP_META.displayVersion}</span>
+        </div>
         <span class="hud-team-name">${gameStore.getState().team.name}</span>
         <span class="hud-score num" id="hud-score">0 : 0</span>
         <span class="hud-team-name">AI FC</span>
@@ -216,7 +221,7 @@ export class InGameHUD {
 
     this.pauseModalEl = createModal(
       '경기 일시정지',
-      '경기를 계속 진행하거나 포기하고 나갈 수 있습니다.',
+      `${APP_META.name} ${APP_META.displayVersion} — 경기를 계속 진행하거나 포기하고 나갈 수 있습니다.`,
       [
         {
           text: '경기 계속하기',

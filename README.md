@@ -1,6 +1,6 @@
-# ⚽ Football Manager (Singleplayer Soccer Management & Action Game)
+# ⚽ FC Superstar (v1.0.0)
 
-'피파 온라인'의 재미(나만의 드림팀 구성, 이적시장 영입, 훈련장 육성, 실시간 경기 조작)를 싱글플레이어로 즐길 수 있는 웹/데스크톱 축구 게임입니다.
+**FC Superstar**는 '피파 온라인'의 재미(나만의 드림팀 구성, 이적시장 영입, 훈련장 육성, 실시간 경기 조작)를 싱글플레이어로 즐길 수 있는 웹/데스크톱 축구 게임입니다.
 
 ---
 

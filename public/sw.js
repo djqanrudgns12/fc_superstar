@@ -1,5 +1,5 @@
 /* ================================================================
-   FC SUPERSTAR — L4 Static Asset Cache Service Worker
+   FC Superstar (v1.0.0) — L4 Static Asset Cache Service Worker
    Scoped with relative paths for GitHub Pages subpath hosting.
 
    Caching Policy:
@@ -8,12 +8,14 @@
    - Cross-origin fonts (jsDelivr Pretendard): Stale-While-Revalidate
    ================================================================ */
 
+const APP_NAME = 'FC Superstar';
+const APP_VERSION = '1.0.0';
 const CACHE_PREFIX = 'fc-superstar-static';
-const CACHE_NAME = `${CACHE_PREFIX}-v1`;
+const CACHE_NAME = `${CACHE_PREFIX}-v${APP_VERSION}`;
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(['./', './index.html'])).catch(() => {})
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(['./', './index.html', './manifest.webmanifest'])).catch(() => {})
   );
   self.skipWaiting();
 });

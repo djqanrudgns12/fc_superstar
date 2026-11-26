@@ -1179,7 +1179,7 @@ function drawAerialCityAndStadiumExterior(gfx: Phaser.GameObjects.Graphics): voi
   queueVehicle(260, nRoadY + 38, 56, 26, 'x', -1, 0x2E5B8E);
   queueVehicle(1160, nRoadY + 112, 56, 26, 'x', 1, 0xC94038);
   queueVehicle(1580, nRoadY + 38, 56, 26, 'x', -1, 0x525864);
-  // South Ave traffic + FC SUPERSTAR Team Bus near South-West gate!
+  // South Ave traffic + FC Superstar Team Bus near South-West gate!
   queueVehicle(180, sRoadY + 36, 124, 34, 'x', 1, 0x1E3A5F, true);
   queueVehicle(-210, sRoadY + 112, 56, 26, 'x', -1, 0x3C7A57);
   queueVehicle(540, sRoadY + 38, 56, 26, 'x', 1, 0xE2C15A);

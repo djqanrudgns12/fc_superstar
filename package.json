@@ -1,6 +1,7 @@
 {
-  "name": "soccer-manager-game",
+  "name": "fc-superstar",
   "version": "1.0.0",
+  "description": "FC Superstar — Singleplayer Soccer Management & Action Game",
   "private": true,
   "type": "module",
   "scripts": {

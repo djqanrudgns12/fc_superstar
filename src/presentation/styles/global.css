@@ -793,12 +793,89 @@ h3 { font-size: var(--font-size-lg); }
   color: var(--color-accent);
 }
 
+.home-brand-title-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .home-brand-title {
   font-size: var(--font-size-md);
   font-weight: 800;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   color: var(--color-text-primary);
   line-height: 1.15;
+}
+
+.home-version-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #7A5E2D;
+  background: rgba(184, 155, 104, 0.16);
+  border: 1px solid rgba(184, 155, 104, 0.38);
+  line-height: 1.25;
+}
+
+/* ── Global Brand & Version Footer ── */
+.app-global-footer {
+  margin-top: var(--space-5);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border-hairline);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  letter-spacing: 0.04em;
+  user-select: none;
+}
+
+.app-global-footer-name {
+  font-weight: 700;
+  color: var(--color-action-primary);
+}
+
+.app-global-footer-sep {
+  opacity: 0.45;
+}
+
+.app-global-footer-version {
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+/* ── HUD Brand Badge ── */
+.hud-brand-badge {
+  position: absolute;
+  left: var(--space-4);
+  top: var(--space-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--radius-small);
+  background: rgba(27, 26, 24, 0.45);
+  border: 1px solid rgba(184, 155, 104, 0.32);
+  color: #FFFCF7;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  pointer-events: none;
+}
+
+.hud-brand-name {
+  font-weight: 800;
+}
+
+.hud-brand-ver {
+  font-weight: 700;
+  color: #E5C88D;
+  font-size: 10px;
 }
 
 .home-wallet {

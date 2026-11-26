@@ -1,3 +1,4 @@
+import { APP_META } from '../../../shared/config/appMeta';
 import { gameStore } from '../../../infrastructure/stores/gameStore';
 import { formatCoins } from '../components';
 import { resolvePlayerVisualProfile } from '../../scenes/PlayerAppearance';
@@ -110,7 +111,10 @@ export function renderHomeScreen(container: HTMLElement): void {
       <div class="home-crest">${HOME_SVGS.crest}</div>
       <div>
         <div class="home-brand-sub">OFFICIAL CLUBHOUSE</div>
-        <h1 class="home-brand-title">FC SUPERSTAR</h1>
+        <div class="home-brand-title-row">
+          <h1 class="home-brand-title">${APP_META.name}</h1>
+          <span class="home-version-pill num">${APP_META.displayVersion}</span>
+        </div>
       </div>
     </div>
     <div class="home-wallet">
@@ -375,6 +379,10 @@ export function renderHomeScreen(container: HTMLElement): void {
         </div>
         <div style="background:var(--color-canvas);border:1px solid var(--color-border-hairline);border-radius:var(--radius-small);padding:12px;margin-bottom:var(--space-4);font-size:var(--font-size-sm);display:flex;flex-direction:column;gap:6px;">
           <div style="display:flex;justify-content:space-between;">
+            <span style="color:var(--color-text-muted);">앱 버전</span>
+            <span class="num" style="font-weight:700;">${APP_META.name} ${APP_META.displayVersion}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
             <span style="color:var(--color-text-muted);">L2 영구 저장소</span>
             <span>${idbBadge}</span>
           </div>
@@ -426,7 +434,7 @@ export function renderHomeScreen(container: HTMLElement): void {
       const a = document.createElement('a');
       const stamp = new Date().toISOString().slice(0, 10);
       a.href = url;
-      a.download = `fc-superstar-backup-${stamp}.json`;
+      a.download = `${APP_META.slug}-backup-${stamp}.json`;
       a.click();
       URL.revokeObjectURL(url);
       showFeedback('로컬 DB 백업 파일이 다운로드되었습니다.');

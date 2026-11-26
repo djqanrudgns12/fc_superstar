@@ -1,5 +1,5 @@
 /* ================================================================
-   GAME CONFIGURATION — Soccer Manager Game
+   GAME CONFIGURATION — FC Superstar (v1.0.0)
    All tunable constants: pitch dimensions, match timing, economy, AI
    ================================================================ */
 

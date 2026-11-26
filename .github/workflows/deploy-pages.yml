@@ -1,4 +1,4 @@
-name: Deploy FC SUPERSTAR to GitHub Pages
+name: Deploy FC Superstar to GitHub Pages
 
 on:
   push:

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import './presentation/styles/global.css';
 
+import { APP_META } from './shared/config/appMeta';
 import { gameStore } from './infrastructure/stores/gameStore';
 import { Router } from './presentation/ui/Router';
 import { renderHomeScreen } from './presentation/ui/screens/HomeScreen';
@@ -15,6 +16,12 @@ import { InGameHUD } from './presentation/ui/HUD';
 import { BootScene } from './presentation/scenes/BootScene';
 import { MatchScene } from './presentation/scenes/MatchScene';
 import { TrainingScene } from './presentation/scenes/TrainingScene';
+
+// 0. Apply Global App Metadata (FC Superstar v1.0.0)
+document.title = APP_META.name;
+document.documentElement.dataset.appName = APP_META.name;
+document.documentElement.dataset.appVersion = APP_META.version;
+window.__APP_META__ = APP_META;
 
 // 1. Initialize Game Store
 gameStore.getState().initialize();
