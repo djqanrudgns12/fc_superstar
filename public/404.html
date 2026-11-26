@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FC SUPERSTAR — Redirecting...</title>
+  <script>
+    // GitHub Pages SPA fallback: redirect unknown sub-paths back to the app root
+    (function () {
+      var segs = window.location.pathname.split('/').filter(Boolean);
+      var repoBase = segs.length > 0 ? '/' + segs[0] + '/' : '/';
+      window.location.replace(repoBase);
+    })();
+  </script>
+</head>
+<body>
+  <noscript>
+    <p>페이지를 찾을 수 없습니다. <a href="./">FC SUPERSTAR 홈으로 이동</a></p>
+  </noscript>
+</body>
+</html>

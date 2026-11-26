@@ -1,0 +1,73 @@
+/* ================================================================
+   QUIET LUXURY DESIGN TOKENS
+   ================================================================ */
+:root {
+  /* ── Core 5-Token Palette ── */
+  --color-canvas:          #F5F0E8;
+  --color-surface:         #FFFCF7;
+  --color-text-primary:    #1B1A18;
+  --color-action-primary:  #403D38;
+  --color-accent:          #B89B68;
+
+  /* ── Extended Semantic Tokens ── */
+  --color-surface-elevated: #FFFFFF;
+  --color-text-muted:       #847C70;
+  --color-border-hairline:  rgba(42, 38, 34, 0.10);
+  --color-success:          #3F7252;
+  --color-warning:          #B88B28;
+  --color-danger:           #A84444;
+
+  /* ── Interaction States ── */
+  --color-action-hover:     #2E2C28;
+  --color-action-disabled:  #C5C0B8;
+  --color-focus-ring:       rgba(184, 155, 104, 0.4);
+
+  /* ── Grade Colors ── */
+  --color-grade-1:          #B89B68;
+  --color-grade-2:          #8B8B8B;
+  --color-grade-3:          #403D38;
+  --color-grade-4:          #8C8579;
+  --color-grade-5:          #C5C0B8;
+
+  /* ── Typography ── */
+  --font-family:            'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-size-xs:           0.64rem;
+  --font-size-sm:           0.8rem;
+  --font-size-base:         1rem;
+  --font-size-md:           1.25rem;
+  --font-size-lg:           1.563rem;
+  --font-size-xl:           1.953rem;
+  --font-size-2xl:          2.441rem;
+  --font-variant-numeric:   tabular-nums;
+
+  /* ── Spacing (8px rhythm) ── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* ── Radius & Shadow ── */
+  --radius-component:       16px;
+  --radius-small:           10px;
+  --radius-pill:            999px;
+  --shadow-card:            0 2px 8px rgba(27, 26, 24, 0.045);
+  --shadow-elevated:        0 8px 24px rgba(27, 26, 24, 0.08);
+  --shadow-modal:           0 14px 40px rgba(27, 26, 24, 0.14);
+
+  /* ── Motion ── */
+  --transition-fast:        180ms ease-out;
+  --transition-base:        220ms ease-out;
+  --transition-slow:        260ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 0ms;
+    --transition-base: 0ms;
+    --transition-slow: 0ms;
+  }
+}
