@@ -27,6 +27,7 @@ import {
   PENALTY_SPOT_DISTANCE,
 } from '../../infrastructure/config/game-config';
 import { drawIndividualSpectator, fillFastCircle } from './PlayerAppearance';
+import type { StadiumTimeOfDay } from '../../shared/types/index';
 
 // ── Coordinate Conversion ──
 
@@ -153,13 +154,19 @@ class Canvas2DGraphicsAdapter {
   }
 }
 
-const BAKED_STADIUM_TEX_KEY = 'fc_superstar_baked_stadium_v3';
+const BAKED_STADIUM_TEX_PREFIX = 'fc_superstar_baked_stadium_v4_';
 const STADIUM_LOGICAL_W = 3160;
 const STADIUM_LOGICAL_H = 1880;
 
-const BAKED_CITY_TEX_KEY = 'fc_superstar_baked_city_v1';
+const BAKED_CITY_TEX_PREFIX = 'fc_superstar_baked_city_v2_';
 const CITY_LOGICAL_W = 3960;
 const CITY_LOGICAL_H = 3160;
+
+export function getStadiumBackgroundHex(timeOfDay: StadiumTimeOfDay = 'day'): string {
+  if (timeOfDay === 'noon') return '#344E39';
+  if (timeOfDay === 'night') return '#111824';
+  return '#27382B';
+}
 
 /**
  * Bakes both:
@@ -167,10 +174,16 @@ const CITY_LOGICAL_H = 3160;
  *    crosswalks, sidewalks, cars & team bus, parking lot, fan park with fountain, and 3D buildings)
  * 2. The tiered World Cup Stadium itself (outer facade rim, grandstands, 430+ spectators,
  *    LED boards, jumbotron, striped turf, lines, and 3D goals)
- * ONCE onto hardware-antialiased Canvas textures (< 4096px GPU safe) for locked 60 FPS rendering!
+ * keyed by StadiumTimeOfDay ('day' | 'noon' | 'night') for locked 60 FPS rendering!
  */
-export function createBakedStadiumImage(scene: Phaser.Scene): Phaser.GameObjects.Image {
-  if (!scene.textures.exists(BAKED_CITY_TEX_KEY)) {
+export function createBakedStadiumImage(
+  scene: Phaser.Scene,
+  timeOfDay: StadiumTimeOfDay = 'day'
+): Phaser.GameObjects.Image {
+  const cityKey = `${BAKED_CITY_TEX_PREFIX}${timeOfDay}`;
+  const stadiumKey = `${BAKED_STADIUM_TEX_PREFIX}${timeOfDay}`;
+
+  if (!scene.textures.exists(cityKey)) {
     const cityCanvas = document.createElement('canvas');
     cityCanvas.width = CITY_LOGICAL_W;
     cityCanvas.height = CITY_LOGICAL_H;
@@ -180,18 +193,18 @@ export function createBakedStadiumImage(scene: Phaser.Scene): Phaser.GameObjects
       cityCtx.save();
       cityCtx.translate(CITY_LOGICAL_W * 0.5, CITY_LOGICAL_H * 0.5);
       const cityAdapter = new Canvas2DGraphicsAdapter(cityCtx) as unknown as Phaser.GameObjects.Graphics;
-      drawAerialCityAndStadiumExterior(cityAdapter);
+      drawAerialCityAndStadiumExterior(cityAdapter, timeOfDay);
       cityCtx.restore();
     }
 
-    scene.textures.addCanvas(BAKED_CITY_TEX_KEY, cityCanvas);
+    scene.textures.addCanvas(cityKey, cityCanvas);
   }
 
-  const cityImg = scene.add.image(0, 0, BAKED_CITY_TEX_KEY);
+  const cityImg = scene.add.image(0, 0, cityKey);
   cityImg.setDisplaySize(CITY_LOGICAL_W, CITY_LOGICAL_H);
   cityImg.setDepth(-1005);
 
-  if (!scene.textures.exists(BAKED_STADIUM_TEX_KEY)) {
+  if (!scene.textures.exists(stadiumKey)) {
     const texScale = 1.28; // 4045 x 2406 (< 4096 WebGL universal limit, crisp & unclipped!)
     const canvas = document.createElement('canvas');
     canvas.width = Math.round(STADIUM_LOGICAL_W * texScale);
@@ -204,14 +217,14 @@ export function createBakedStadiumImage(scene: Phaser.Scene): Phaser.GameObjects
       ctx.translate(STADIUM_LOGICAL_W * 0.5, STADIUM_LOGICAL_H * 0.5);
 
       const adapter = new Canvas2DGraphicsAdapter(ctx) as unknown as Phaser.GameObjects.Graphics;
-      drawIsoPitch(adapter);
+      drawIsoPitch(adapter, { timeOfDay });
       ctx.restore();
     }
 
-    scene.textures.addCanvas(BAKED_STADIUM_TEX_KEY, canvas);
+    scene.textures.addCanvas(stadiumKey, canvas);
   }
 
-  const stadiumImg = scene.add.image(0, 0, BAKED_STADIUM_TEX_KEY);
+  const stadiumImg = scene.add.image(0, 0, stadiumKey);
   stadiumImg.setDisplaySize(STADIUM_LOGICAL_W, STADIUM_LOGICAL_H);
   stadiumImg.setDepth(-1000);
   return stadiumImg;
@@ -330,6 +343,7 @@ export interface PitchDrawConfig {
   surroundPadding?: number;
   ledBoardWidth?: number;
   crowdDepth?: number;
+  timeOfDay?: StadiumTimeOfDay;
 }
 
 /**
@@ -339,6 +353,7 @@ export interface PitchDrawConfig {
  * - LED sponsor boards along all touchlines
  * - Striped pitch grass and white field markings
  * - 3D framed goal nets
+ * - Time-of-day atmospheric lighting ('day' | 'noon' | 'night')
  */
 export function drawIsoPitch(
   gfx: Phaser.GameObjects.Graphics,
@@ -347,27 +362,29 @@ export function drawIsoPitch(
   const pad = config?.surroundPadding ?? 50;
   const ledW = config?.ledBoardWidth ?? 14;
   const crowdD = config?.crowdDepth ?? 150;
+  const timeOfDay: StadiumTimeOfDay = config?.timeOfDay ?? 'day';
 
   // ── 0. Stadium Architectural Exterior Facade Rim & 4 Corner Floodlight Pylons ──
-  drawStadiumExteriorRim(gfx, pad, crowdD);
+  drawStadiumExteriorRim(gfx, pad, crowdD, timeOfDay);
 
   // ── 1. Stadium Grandstands Structure (Concrete Base) ──
   drawIsoRect(
     gfx,
     -pad - crowdD, -pad - crowdD,
     PITCH_WIDTH + (pad + crowdD) * 2, PITCH_HEIGHT + (pad + crowdD) * 2,
-    0x2E2C28, 1.0
+    timeOfDay === 'night' ? 0x1A1D24 : 0x2E2C28, 1.0
   );
 
   // ── 2. Tiered Stadium Stands & Crowds (Spectators in Rows) ──
   drawTieredCrowdGrandstands(gfx, pad, crowdD);
 
   // ── 3. Pitch Surround (Dark Grass / Sideline Warmup Area) ──
+  const surroundCol = timeOfDay === 'noon' ? 0x3B7042 : (timeOfDay === 'night' ? 0x1E3D24 : 0x315C36);
   drawIsoRect(
     gfx,
     -pad, -pad,
     PITCH_WIDTH + pad * 2, PITCH_HEIGHT + pad * 2,
-    0x315C36, 1.0
+    surroundCol, 1.0
   );
 
   // ── 4. Dynamic LED Sponsor Boards (Backlit with Neon Sponsor Accents) ──
@@ -376,12 +393,33 @@ export function drawIsoPitch(
   // ── 4-2. Grand 3D Stadium Jumbotron Scoreboard (North Stand Center) ──
   drawStadiumScoreboard(gfx, pad, crowdD);
 
-  // ── 5. Main Pitch Grass (Lush Green with Alternating Stripes) ──
+  // ── 5. Main Pitch Grass (Lush Green with Alternating Stripes by Time of Day) ──
+  const stripeDark = timeOfDay === 'noon' ? 0x42964B : (timeOfDay === 'night' ? 0x255C2E : 0x367A3F);
+  const stripeLight = timeOfDay === 'noon' ? 0x4DA857 : (timeOfDay === 'night' ? 0x2C6A36 : 0x3E8B47);
   const stripeCount = 14;
   const stripeH = PITCH_HEIGHT / stripeCount;
   for (let i = 0; i < stripeCount; i++) {
-    const color = i % 2 === 0 ? 0x367A3F : 0x3E8B47;
+    const color = i % 2 === 0 ? stripeDark : stripeLight;
     drawIsoRect(gfx, 0, i * stripeH, PITCH_WIDTH, stripeH, color, 1.0);
+  }
+
+  // Subtle lighting wash over pitch
+  if (timeOfDay === 'day') {
+    drawIsoRect(gfx, 0, 0, PITCH_WIDTH, PITCH_HEIGHT, 0xFFE3A8, 0.045);
+  } else if (timeOfDay === 'noon') {
+    drawIsoRect(gfx, 0, 0, PITCH_WIDTH, PITCH_HEIGHT, 0xFFFFFF, 0.055);
+  } else {
+    // Night match floodlight pools illuminating the center & penalty boxes!
+    const lightSpots: [number, number, number][] = [
+      [PITCH_HALF_W, PITCH_HALF_H, 420],
+      [260, PITCH_HALF_H, 260],
+      [PITCH_WIDTH - 260, PITCH_HALF_H, 260],
+    ];
+    for (const [lx, ly, lr] of lightSpots) {
+      const lp = worldToIso(lx, ly);
+      gfx.fillStyle(0xFFF6D6, 0.06);
+      fillFastCircle(gfx, lp.x, lp.y, lr * 0.72, 12);
+    }
   }
 
   // ── 6. Pitch Markings (Crisp White Lines) ──
@@ -665,20 +703,26 @@ export function getGoalPositions(): { leftGoal: GoalPosition; rightGoal: GoalPos
  * Draws the outer architectural concrete/metallic facade ring and 4 corner floodlight towers
  * around the stadium roof rim.
  */
-function drawStadiumExteriorRim(gfx: Phaser.GameObjects.Graphics, pad: number, crowdD: number): void {
+function drawStadiumExteriorRim(
+  gfx: Phaser.GameObjects.Graphics,
+  pad: number,
+  crowdD: number,
+  timeOfDay: StadiumTimeOfDay = 'day'
+): void {
   const outerRim = 24;
   const minX = -pad - crowdD - outerRim;
   const minY = -pad - crowdD - outerRim;
   const fullW = PITCH_WIDTH + (pad + crowdD + outerRim) * 2;
   const fullH = PITCH_HEIGHT + (pad + crowdD + outerRim) * 2;
 
+  const rimColor = timeOfDay === 'noon' ? 0xDFDCD4 : (timeOfDay === 'night' ? 0x6F7480 : 0xCFCBC2);
   // Outer sleek roof rim + metallic edge + gold architectural stripe
-  drawIsoRect(gfx, minX, minY, fullW, fullH, 0xCFCBC2, 1.0);
-  strokeIsoRect(gfx, minX, minY, fullW, fullH, 0x7A776E, 2.5, 0.95);
+  drawIsoRect(gfx, minX, minY, fullW, fullH, rimColor, 1.0);
+  strokeIsoRect(gfx, minX, minY, fullW, fullH, timeOfDay === 'night' ? 0x3A3F4A : 0x7A776E, 2.5, 0.95);
   strokeIsoRect(gfx, minX + 7, minY + 7, fullW - 14, fullH - 14, 0xB89B68, 1.8, 0.85);
 
   // Radial roof rib ribs around the stadium perimeter
-  gfx.lineStyle(1.4, 0x9E9A90, 0.72);
+  gfx.lineStyle(1.4, timeOfDay === 'night' ? 0x4E5360 : 0x9E9A90, 0.72);
   for (let x = minX + 55; x < minX + fullW - 35; x += 110) {
     drawIsoLine(gfx, x, minY + 2, x, minY + outerRim - 2);
     drawIsoLine(gfx, x, minY + fullH - outerRim + 2, x, minY + fullH - 2);
@@ -688,7 +732,7 @@ function drawStadiumExteriorRim(gfx: Phaser.GameObjects.Graphics, pad: number, c
     drawIsoLine(gfx, minX + fullW - outerRim + 2, y, minX + fullW - 2, y);
   }
 
-  // 4 Corner Floodlight Tower Pylons
+  // 4 Corner Floodlight Tower Pylons (bright luminous bloom at Night!)
   const corners: [number, number][] = [
     [-218, -218],
     [PITCH_WIDTH + 218, -218],
@@ -697,13 +741,19 @@ function drawStadiumExteriorRim(gfx: Phaser.GameObjects.Graphics, pad: number, c
   ];
   for (const [cx, cy] of corners) {
     const p = worldToIso(cx, cy);
-    // Soft aerial light bloom
-    gfx.fillStyle(0xFFF6D6, 0.14);
-    fillFastCircle(gfx, p.x, p.y - 4, 24, 12);
+    if (timeOfDay === 'night') {
+      gfx.fillStyle(0xFFF6D6, 0.14);
+      fillFastCircle(gfx, p.x, p.y - 4, 46, 12);
+      gfx.fillStyle(0xFFF6D6, 0.28);
+      fillFastCircle(gfx, p.x, p.y - 4, 24, 12);
+    } else if (timeOfDay === 'day') {
+      gfx.fillStyle(0xFFF6D6, 0.12);
+      fillFastCircle(gfx, p.x, p.y - 4, 20, 12);
+    }
     // Pylon base & steel truss head
     gfx.fillStyle(0x262A34, 0.96);
     fillFastCircle(gfx, p.x, p.y, 10, 12);
-    gfx.fillStyle(0xE6E4DC, 1);
+    gfx.fillStyle(timeOfDay === 'night' ? 0xFFFDF0 : 0xE6E4DC, 1);
     fillFastCircle(gfx, p.x, p.y - 4, 6.2, 12);
     gfx.lineStyle(1.6, 0xD4AF37, 0.9);
     gfx.strokeCircle(p.x, p.y - 4, 7.2);
@@ -896,16 +946,24 @@ function drawIsoVehicle(
  * Draws the stadium perimeter promenade, ring avenues, crosswalks, sidewalks,
  * parking lot, fan park with fountain, cars, team bus, trees, streetlights, and city buildings.
  */
-function drawAerialCityAndStadiumExterior(gfx: Phaser.GameObjects.Graphics): void {
+function drawAerialCityAndStadiumExterior(
+  gfx: Phaser.GameObjects.Graphics,
+  timeOfDay: StadiumTimeOfDay = 'day'
+): void {
+  const isNoon = timeOfDay === 'noon';
+  const isNight = timeOfDay === 'night';
+
   // ── 1. Base Urban Park / District Ground ──
-  gfx.fillStyle(0x27382B, 1);
+  const baseParkCol = isNoon ? 0x344E39 : (isNight ? 0x111824 : 0x27382B);
+  const altParkCol = isNoon ? 0x3A5840 : (isNight ? 0x151F2E : 0x2B3F30);
+  gfx.fillStyle(baseParkCol, 1);
   gfx.fillRect(-CITY_LOGICAL_W * 0.5, -CITY_LOGICAL_H * 0.5, CITY_LOGICAL_W, CITY_LOGICAL_H);
 
   // Subtle alternating manicured outer urban district lawn quads
   for (let gx = -1500; gx < 3100; gx += 480) {
     for (let gy = -1400; gy < 2400; gy += 480) {
       if ((Math.floor(gx / 480) + Math.floor(gy / 480)) % 2 === 0) {
-        drawIsoRect(gfx, gx, gy, 480, 480, 0x2B3F30, 0.65);
+        drawIsoRect(gfx, gx, gy, 480, 480, altParkCol, 0.65);
       }
     }
   }
@@ -1109,10 +1167,22 @@ function drawAerialCityAndStadiumExterior(gfx: Phaser.GameObjects.Graphics): voi
         const lp = worldToIso(wx, wy);
         gfx.fillStyle(0x464B54, 1);
         gfx.fillRect(lp.x - 1.5, lp.y - 16, 3, 16);
-        gfx.fillStyle(0xFFE8A3, 0.28);
-        fillFastCircle(gfx, lp.x, lp.y - 17, 9, 8);
-        gfx.fillStyle(0xFFF5D1, 0.95);
-        fillFastCircle(gfx, lp.x, lp.y - 17, 3, 8);
+        if (isNight) {
+          gfx.fillStyle(0xFFE494, 0.22);
+          fillFastCircle(gfx, lp.x, lp.y - 17, 22, 12);
+          gfx.fillStyle(0xFFF1B8, 0.48);
+          fillFastCircle(gfx, lp.x, lp.y - 17, 11, 8);
+          gfx.fillStyle(0xFFFDF0, 1);
+          fillFastCircle(gfx, lp.x, lp.y - 17, 3.6, 8);
+        } else if (!isNoon) {
+          gfx.fillStyle(0xFFE8A3, 0.24);
+          fillFastCircle(gfx, lp.x, lp.y - 17, 8, 8);
+          gfx.fillStyle(0xFFF5D1, 0.85);
+          fillFastCircle(gfx, lp.x, lp.y - 17, 2.6, 8);
+        } else {
+          gfx.fillStyle(0xC8CCD4, 0.9);
+          fillFastCircle(gfx, lp.x, lp.y - 17, 2.5, 8);
+        }
       },
     });
   };
@@ -1233,5 +1303,36 @@ function drawAerialCityAndStadiumExterior(gfx: Phaser.GameObjects.Graphics): voi
   drawQueue.sort((a, b) => a.sortKey - b.sortKey);
   for (const item of drawQueue) {
     item.draw();
+  }
+
+  // Global Time-of-Day Atmospheric Grade over outer city
+  if (isNight) {
+    gfx.fillStyle(0x091326, 0.42);
+    gfx.fillRect(-CITY_LOGICAL_W * 0.5, -CITY_LOGICAL_H * 0.5, CITY_LOGICAL_W, CITY_LOGICAL_H);
+    // Re-glow warm streetlights on top of the night ambient veil!
+    for (let x = -280; x <= 1880; x += 360) {
+      for (const ly of [-455, 1455]) {
+        const lp = worldToIso(x, ly);
+        gfx.fillStyle(0xFFE494, 0.20);
+        fillFastCircle(gfx, lp.x, lp.y - 17, 24, 12);
+        gfx.fillStyle(0xFFF5CE, 0.95);
+        fillFastCircle(gfx, lp.x, lp.y - 17, 3.6, 8);
+      }
+    }
+    for (let y = -260; y <= 1260; y += 340) {
+      for (const lx of [-455, 2055]) {
+        const lp = worldToIso(lx, y);
+        gfx.fillStyle(0xFFE494, 0.20);
+        fillFastCircle(gfx, lp.x, lp.y - 17, 24, 12);
+        gfx.fillStyle(0xFFF5CE, 0.95);
+        fillFastCircle(gfx, lp.x, lp.y - 17, 3.6, 8);
+      }
+    }
+  } else if (isNoon) {
+    gfx.fillStyle(0xFFFFFF, 0.08);
+    gfx.fillRect(-CITY_LOGICAL_W * 0.5, -CITY_LOGICAL_H * 0.5, CITY_LOGICAL_W, CITY_LOGICAL_H);
+  } else {
+    gfx.fillStyle(0xFFE1A8, 0.04);
+    gfx.fillRect(-CITY_LOGICAL_W * 0.5, -CITY_LOGICAL_H * 0.5, CITY_LOGICAL_W, CITY_LOGICAL_H);
   }
 }

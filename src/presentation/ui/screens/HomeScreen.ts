@@ -1,7 +1,8 @@
 import { APP_META } from '../../../shared/config/appMeta';
 import { gameStore } from '../../../infrastructure/stores/gameStore';
-import { formatCoins } from '../components';
+import { formatCoins, showToast } from '../components';
 import { resolvePlayerVisualProfile } from '../../scenes/PlayerAppearance';
+import type { StadiumTimeOfDay } from '../../../shared/types/index';
 
 /* ── Custom Crisp Vector SVG Icons (Replaces all system emojis) ── */
 const HOME_SVGS = {
@@ -82,6 +83,31 @@ const HOME_SVGS = {
       <path d="M3.5 10c0 1.44 2.9 2.6 6.5 2.6s6.5-1.16 6.5-2.6"/>
     </svg>
   `,
+  settings: `
+    <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="10" cy="10" r="2.8"/>
+      <path d="M10 2.5v1.8M10 15.7v1.8M2.5 10h1.8M15.7 10h1.8M4.7 4.7l1.3 1.3M14 14l1.3 1.3M15.3 4.7L14 6M6 14l-1.3 1.3"/>
+    </svg>
+  `,
+  sunDay: `
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="4.2" fill="rgba(212,175,55,0.22)"/>
+      <path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M18.4 5.6l-1.6 1.6M7.2 16.8l-1.6 1.6"/>
+    </svg>
+  `,
+  sunNoon: `
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="5" fill="rgba(245,197,66,0.32)"/>
+      <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/>
+    </svg>
+  `,
+  moonNight: `
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19.5 14.2A7.5 7.5 0 0 1 9.8 4.5a7.5 7.5 0 1 0 9.7 9.7z" fill="rgba(125,162,224,0.24)"/>
+      <circle cx="17.5" cy="6.5" r="0.9" fill="currentColor" stroke="none"/>
+      <circle cx="19.8" cy="9.4" r="0.7" fill="currentColor" stroke="none"/>
+    </svg>
+  `,
 };
 
 export function renderHomeScreen(container: HTMLElement): void {
@@ -130,12 +156,20 @@ export function renderHomeScreen(container: HTMLElement): void {
         <span class="home-wallet-icon">${HOME_SVGS.database}</span>
         <span>DB</span>
       </button>
+      <button type="button" class="home-wallet-chip home-wallet-settings" id="home-btn-settings" title="경기장 환경 설정 (낮 / 정오 / 밤)" style="cursor:pointer;">
+        <span class="home-wallet-icon">${HOME_SVGS.settings}</span>
+        <span>설정</span>
+      </button>
     </div>
   `;
   wrapper.appendChild(topHeader);
 
   topHeader.querySelector('#home-btn-local-db')?.addEventListener('click', () => {
     void showLocalDbModal();
+  });
+
+  topHeader.querySelector('#home-btn-settings')?.addEventListener('click', () => {
+    showSettingsModal();
   });
 
   // ── 2. Hero Matchday Banner Card (Primary CTA -> 'formation') ──
@@ -474,5 +508,99 @@ export function renderHomeScreen(container: HTMLElement): void {
     });
 
     modal.querySelector('#close-db-modal')?.addEventListener('click', () => modal.remove());
+  }
+
+  function showSettingsModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    document.body.appendChild(modal);
+
+    const timeOptions: {
+      value: StadiumTimeOfDay;
+      label: string;
+      sub: string;
+      icon: string;
+      swatch: string;
+    }[] = [
+      {
+        value: 'day',
+        label: '낮',
+        sub: '따뜻한 오후 햇살과 자연스러운 잔디',
+        icon: HOME_SVGS.sunDay,
+        swatch: 'linear-gradient(135deg, #6EA7D8 0%, #3E8B47 100%)',
+      },
+      {
+        value: 'noon',
+        label: '정오',
+        sub: '화창하고 선명한 한낮의 직사광선 스타디움',
+        icon: HOME_SVGS.sunNoon,
+        swatch: 'linear-gradient(135deg, #8ED0FF 0%, #4BA856 100%)',
+      },
+      {
+        value: 'night',
+        label: '밤',
+        sub: '대형 조명탑과 야경이 빛나는 나이트 매치',
+        icon: HOME_SVGS.moonNight,
+        swatch: 'linear-gradient(135deg, #131B2A 0%, #244E34 65%, #D4AF37 100%)',
+      },
+    ];
+
+    function renderSettingsContent() {
+      const currentTime = gameStore.getState().stadiumTime;
+      const cardsHtml = timeOptions
+        .map((opt) => {
+          const isActive = opt.value === currentTime;
+          return `
+            <button type="button" class="settings-time-option ${isActive ? 'active' : ''}" data-time="${opt.value}">
+              <span class="settings-time-swatch" style="background:${opt.swatch};">
+                ${opt.icon}
+              </span>
+              <span class="settings-time-text">
+                <strong>${opt.label}</strong>
+                <small>${opt.sub}</small>
+              </span>
+              <span class="settings-time-check">${isActive ? '선택됨' : ''}</span>
+            </button>
+          `;
+        })
+        .join('');
+
+      modal.innerHTML = `
+        <div class="modal-content" style="max-width:440px;">
+          <div class="modal-title" style="display:flex;align-items:center;justify-content:center;gap:8px;">
+            ${HOME_SVGS.settings}
+            <span>게임 환경 설정</span>
+          </div>
+          <div style="font-size:12px;font-weight:700;color:var(--color-text-muted);margin-bottom:10px;letter-spacing:0.04em;">
+            경기장 시간대 (조명 및 분위기)
+          </div>
+          <div class="settings-time-list">
+            ${cardsHtml}
+          </div>
+          <button type="button" class="btn btn-primary btn-block" id="close-settings-modal" style="margin-top:var(--space-4);">
+            닫기
+          </button>
+        </div>
+      `;
+
+      modal.querySelectorAll('.settings-time-option').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const val = (btn as HTMLElement).dataset.time as StadiumTimeOfDay;
+          if (!val) return;
+          gameStore.getState().setStadiumTime(val);
+          const label = timeOptions.find((o) => o.value === val)?.label || val;
+          showToast(`경기장 시간대가 [${label}]으로 설정되었습니다.`, 'success');
+          renderSettingsContent();
+        });
+      });
+
+      modal.querySelector('#close-settings-modal')?.addEventListener('click', () => modal.remove());
+    }
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.remove();
+    });
+
+    renderSettingsContent();
   }
 }

@@ -10,6 +10,7 @@ export type Grade = 1 | 2 | 3 | 4 | 5;
 export type AIDifficulty = 'easy' | 'normal' | 'hard';
 export type MatchResult = 'win' | 'loss' | 'draw' | 'surrender';
 export type TrainingType = 'strength' | 'stamina';
+export type StadiumTimeOfDay = 'day' | 'noon' | 'night';
 export type GameScreen = 'home' | 'squad' | 'shop' | 'formation' | 'training' | 'matchResult' | 'acquisition';
 
 // ── Player Stats ──
@@ -122,6 +123,7 @@ export interface GameState {
   shopCatalog: ShopEntry[];
   matchHistory: MatchRecord[];
   trainingHistory: TrainingSession[];
+  stadiumTime: StadiumTimeOfDay;
   currentScreen: GameScreen;
   isInitialized: boolean;
 }

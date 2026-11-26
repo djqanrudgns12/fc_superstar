@@ -28,7 +28,7 @@ import {
   PENALTY_AREA_WIDTH,
   CENTER_CIRCLE_RADIUS,
 } from '../../infrastructure/config/game-config';
-import { worldToIso, depthFromWorld, createBakedStadiumImage } from './IsoUtils';
+import { worldToIso, depthFromWorld, createBakedStadiumImage, getStadiumBackgroundHex } from './IsoUtils';
 import {
   resolvePlayerVisualProfile,
   drawDetailedIsoPlayer,
@@ -287,9 +287,13 @@ export class MatchScene extends Phaser.Scene {
 
   create() {
     const uiScale = this.getViewScale();
+    const stadiumTime = gameStore.getState().stadiumTime;
+
+    // Sync viewport backdrop with selected stadium time of day (낮 / 정오 / 밤)
+    this.cameras.main.setBackgroundColor(getStadiumBackgroundHex(stadiumTime));
 
     // 1. Baked Single-Quad GPU Stadium & Pitch (0 per-frame CPU tessellation -> locked 60 FPS!)
-    this.stadiumImage = createBakedStadiumImage(this);
+    this.stadiumImage = createBakedStadiumImage(this, stadiumTime);
 
     // 2. Ball & Shadow (with fast zero-Earcut 3D sphere depth & specular highlight)
     this.ballShadow = this.add.graphics();

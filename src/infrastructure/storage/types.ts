@@ -10,6 +10,7 @@ import type {
   ShopEntry,
   MatchRecord,
   TrainingSession,
+  StadiumTimeOfDay,
 } from '../../shared/types/index';
 
 export const APP_NAMESPACE = 'fc_superstar';
@@ -49,6 +50,7 @@ export interface PersistedGameData {
   shopCatalog: ShopEntry[];
   matchHistory: MatchRecord[];
   trainingHistory: TrainingSession[];
+  stadiumTime?: StadiumTimeOfDay;
 }
 
 export interface StorageEnvelope {

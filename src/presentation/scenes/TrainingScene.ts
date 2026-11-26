@@ -450,16 +450,25 @@ export class TrainingScene extends Phaser.Scene {
   }
 
   private draw3DTrainingComplex(gfx: Phaser.GameObjects.Graphics, width: number, height: number) {
-    gfx.fillStyle(0x101824, 1);
+    const stadiumTime = gameStore.getState().stadiumTime;
+    const isNoon = stadiumTime === 'noon';
+    const isNight = stadiumTime === 'night';
+
+    // Sky & atmospheric horizon matching selected stadium time (낮 / 정오 / 밤)
+    const skyBase = isNoon ? 0x4A98E5 : (isNight ? 0x101824 : 0x4C7EB3);
+    const skyMid = isNoon ? 0x7EC0F5 : (isNight ? 0x182538 : 0x7BA9D4);
+    const skyHorizon = isNoon ? 0xB8E0FF : (isNight ? 0x21324A : 0xB8CFE3);
+
+    gfx.fillStyle(skyBase, 1);
     gfx.fillRect(0, 0, width, height);
-    gfx.fillStyle(0x182538, 1);
+    gfx.fillStyle(skyMid, 1);
     gfx.fillRect(0, 0, width, 210);
-    gfx.fillStyle(0x21324A, 0.55);
+    gfx.fillStyle(skyHorizon, isNight ? 0.55 : 0.72);
     gfx.fillRect(0, 125, width, 85);
 
-    this.fillQuad3D(gfx, -160, -80, WORLD_W + 160, -80, WORLD_W + 180, WORLD_H + 55, -180, WORLD_H + 55, 0x262523, 1);
+    this.fillQuad3D(gfx, -160, -80, WORLD_W + 160, -80, WORLD_W + 180, WORLD_H + 55, -180, WORLD_H + 55, isNight ? 0x1E2026 : 0x2B2C2A, 1);
 
-    // 3D Floodlight Pylons & Volumetric Light Cones
+    // 3D Floodlight Pylons & Volumetric Light Cones (brighter at Night!)
     for (const tx of [80, 360, 640, 920]) {
       const base = this.project3D(tx, -65, 0);
       const top = this.project3D(tx, -65, 190);
@@ -467,16 +476,18 @@ export class TrainingScene extends Phaser.Scene {
       gfx.lineBetween(base.x, base.y, top.x, top.y);
       gfx.fillStyle(0x1E2229, 1);
       gfx.fillRoundedRect(top.x - 18, top.y - 10, 36, 12, 2);
-      gfx.fillStyle(0xFFF8DC, 0.98);
+      gfx.fillStyle(isNight ? 0xFFF8DC : 0xE6E9EE, 0.98);
       gfx.fillRect(top.x - 15, top.y - 7, 30, 6);
-      gfx.fillStyle(0xFFF9E6, 0.045);
-      gfx.beginPath();
-      gfx.moveTo(top.x - 14, top.y);
-      gfx.lineTo(top.x + 14, top.y);
-      gfx.lineTo(base.x + 140, base.y + 220);
-      gfx.lineTo(base.x - 140, base.y + 220);
-      gfx.closePath();
-      gfx.fillPath();
+      if (isNight) {
+        gfx.fillStyle(0xFFF9E6, 0.075);
+        gfx.beginPath();
+        gfx.moveTo(top.x - 14, top.y);
+        gfx.lineTo(top.x + 14, top.y);
+        gfx.lineTo(base.x + 140, base.y + 220);
+        gfx.lineTo(base.x - 140, base.y + 220);
+        gfx.closePath();
+        gfx.fillPath();
+      }
     }
 
     // 3D North Grandstand
@@ -537,13 +548,15 @@ export class TrainingScene extends Phaser.Scene {
     gfx.closePath();
     gfx.fillPath();
 
-    // Foreshortened 3D Grass Stripes
+    // Foreshortened 3D Grass Stripes (adapted for 낮 / 정오 / 밤)
+    const stripeDark = isNoon ? 0x42964B : (isNight ? 0x265E30 : 0x367C3F);
+    const stripeLight = isNoon ? 0x4DA857 : (isNight ? 0x2D6D38 : 0x3F8E49);
     const stripes = 14;
     const stripeW = WORLD_W / stripes;
     for (let i = 0; i < stripes; i++) {
       const x0 = i * stripeW;
       const x1 = (i + 1) * stripeW;
-      this.fillQuad3D(gfx, x0, 0, x1, 0, x1, WORLD_H, x0, WORLD_H, i % 2 === 0 ? 0x367C3F : 0x3F8E49, 1);
+      this.fillQuad3D(gfx, x0, 0, x1, 0, x1, WORLD_H, x0, WORLD_H, i % 2 === 0 ? stripeDark : stripeLight, 1);
     }
 
     // 3D Perspective Pitch Markings

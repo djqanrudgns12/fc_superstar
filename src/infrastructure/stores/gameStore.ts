@@ -25,6 +25,7 @@ import type {
   AIDifficulty,
   MatchResult,
   TrainingType,
+  StadiumTimeOfDay,
 } from '../../shared/types/index';
 
 /* ── Formation Templates ── */
@@ -508,6 +509,7 @@ export interface GameActions {
   applyMatchRewards: (result: MatchResult) => void;
   recordTraining: (session: TrainingSession) => void;
   applyTrainingResult: (playerId: string, type: TrainingType, gain: number) => void;
+  setStadiumTime: (time: StadiumTimeOfDay) => void;
   getPlayer: (playerId: string) => Player | undefined;
   getOwnedPlayers: () => Player[];
   getTeamOverall: () => number;
@@ -530,6 +532,7 @@ function extractPersistedData(state: GameState): PersistedGameData {
     trainingHistory: state.trainingHistory,
     allPlayers: state.allPlayers,
     shopCatalog: state.shopCatalog,
+    stadiumTime: state.stadiumTime,
   };
 }
 
@@ -587,12 +590,18 @@ function reconcileSavedState(saved: PersistedGameData): PersistedGameData {
     }
   }
 
+  const validTime: StadiumTimeOfDay =
+    saved.stadiumTime === 'day' || saved.stadiumTime === 'noon' || saved.stadiumTime === 'night'
+      ? saved.stadiumTime
+      : 'day';
+
   return {
     team: updatedTeam,
     allPlayers: mergedPlayers,
     shopCatalog: baseCatalog,
     matchHistory: saved.matchHistory || [],
     trainingHistory: saved.trainingHistory || [],
+    stadiumTime: validTime,
   };
 }
 
@@ -628,6 +637,7 @@ function buildFreshGameData(): PersistedGameData {
     shopCatalog,
     matchHistory: [],
     trainingHistory: [],
+    stadiumTime: 'day',
   };
 }
 
@@ -650,6 +660,7 @@ export const gameStore = createStore<GameStore>((set, get) => ({
   shopCatalog: [],
   matchHistory: [],
   trainingHistory: [],
+  stadiumTime: 'day' as StadiumTimeOfDay,
   currentScreen: 'home' as GameScreen,
   isInitialized: false,
 
@@ -715,6 +726,12 @@ export const gameStore = createStore<GameStore>((set, get) => ({
   /* ── Screen navigation ── */
   navigate: (screen: GameScreen) => {
     set({ currentScreen: screen });
+  },
+
+  /* ── Stadium Lighting / Time of Day Setting ── */
+  setStadiumTime: (time: StadiumTimeOfDay) => {
+    set({ stadiumTime: time });
+    saveToStorage(get());
   },
 
   /* ── Buy a player from shop ── */
